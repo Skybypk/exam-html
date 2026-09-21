@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PCAO-F Practice Exam</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:950px;margin:20px auto;padding:20px;background:#f4f6f8;line-height:1.55}
+h1{color:#2c3e50;text-align:center;margin-bottom:5px}
+.sub{text-align:center;color:#555;margin-bottom:30px}
+.q{background:#fff;padding:22px;margin:20px 0;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.q p{font-weight:bold;margin-bottom:12px}
+label{display:block;margin:8px 0;cursor:pointer;padding:10px 14px;border-radius:6px;border:1px solid #e0e0e0}
+label:hover{background:#eef5ff;border-color:#4a90e2}
+input[type=checkbox]{margin-right:12px;transform:scale(1.3);cursor:pointer}
+button{display:block;margin:35px auto;padding:16px 50px;font-size:18px;background:#27ae60;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
+button:hover{background:#219150}
+.result{font-weight:bold;margin-top:14px;padding:12px;border-radius:6px;font-size:15px}
+.correct{background:#d4edda;color:#155724;border-left:5px solid #28a745}
+.wrong{background:#f8d7da;color:#721c24;border-left:5px solid #dc3545}
+#score{text-align:center;font-size:26px;font-weight:bold;color:#2c3e50;margin:25px 0;padding:20px;background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.1);display:none}
+.multi{color:#e67e22;font-weight:bold;font-size:13px;margin-left:5px}
+</style>
+</head>
+<body>
+<h1>PCAO-F Practice Exam</h1>
+<p class="sub">70 Questions | 120 Minutes | Tick your answers then click Submit</p>
+<div id="exam"></div>
+<button onclick="submitExam()">Submit Exam</button>
+<div id="score"></div>
+<script>
+const questions = [
+{q:"A regional healthcare network has asked an operations consultant to standardize how its 12 clinic managers write monthly performance narratives. Each manager writes in a different style. The consultant uses Claude to generate a unified narrative from the raw data each manager submits. After the first month, the consultant notices that while the narratives are grammatically correct, they vary wildly in length, tone, and which metrics they emphasize. Some managers' narratives omit patient wait times entirely, while others bury them in paragraph four. Which of the following BEST describes the root cause of this inconsistency?",
+opts:["Claude's context window is being exceeded because 12 managers' data is too much to process at once.","The prompt used to generate the narratives lacks a defined role, a fixed output structure, and explicit instructions about which metrics are mandatory and in what order they must appear.","The clinic managers are submitting data in incompatible file formats, which Claude cannot reconcile.","Claude does not have domain knowledge in healthcare operations and therefore cannot prioritize clinical metrics correctly."],ans:[1]},
+
+{q:"A senior project manager at a construction firm oversees five simultaneous build projects. Every Friday, each site lead sends a status update in their own format — one writes a two-paragraph email, one uses a spreadsheet, one sends voice notes transcribed into text, and two use inconsistent bullet structures. The PM wants Claude to produce a single Monday-morning consolidated report that contains exactly three sections: (1) Completed Milestones, (2) Active Blockers, and (3) Priorities for the Coming Week. The PM also wants any safety incident mentioned by any lead to be surfaced at the very top, regardless of where it appears in the source. Which prompting approach would MOST reliably produce this output?",
+opts:["Ask Claude to read all five updates and summarize the key points in a professional format.","Provide Claude with a fixed output template containing the three required sections plus a mandatory safety-incident header at the top, and instruct Claude to extract only information matching each section.","Ask Claude to be thorough and capture everything important, using your best judgment about structure.","Instruct Claude to combine the five updates into one report and keep it concise."],ans:[1]},
+
+{q:"A management consultant is finalizing a competitive analysis for a client in the renewable energy sector. She used Claude to draft the analysis. She notices two specific statistics: one claims the global solar market grew 18.4% year-over-year, and another claims a named competitor holds 23% market share in Southeast Asia. She cannot find either figure in the sources she provided, and a quick search does not confirm them. The proposal is due tomorrow morning. What is the MOST appropriate course of action?",
+opts:["Remove the two statistics and submit the proposal, since the rest of the analysis appears sound.","Verify both statistics through independent, citable sources; if they cannot be verified, remove or replace them with sourced data before submission.","Keep the statistics but add a footnote stating they are AI-generated estimates.","Ask Claude directly whether the statistics are accurate, and include them if Claude confirms."],ans:[1]},
+
+{q:"A high school biology teacher wants to generate 15 multiple-choice practice questions on cellular respiration for her 10th-grade class. The output includes three questions referencing the electron transport chain's proton-motive force in too much detail, and four questions so basic they ask what the mitochondria is. None match the style of her district's standardized test format. Which refinement would MOST improve the relevance and consistency of the output?",
+opts:["Adding make the questions medium difficulty to the prompt.","Specifying the exact topics covered in class, the target reading level, the district test format, and providing one sample question that illustrates the desired difficulty.","Asking Claude to try again, but focus on quality this time.","Abandoning Claude and using a dedicated education question bank instead."],ans:[1]},
+
+{q:"A financial analyst asks Claude: Analyze this Q3 earnings report and tell me whether I should recommend buying this stock. Claude provides a detailed summary but explicitly states it cannot provide investment recommendations. The analyst is frustrated because she needs a recommendation for a client meeting in two hours. Which of the following BEST describes the situation and the correct next step?",
+opts:["Claude is malfunctioning and should be reported.","Claude's refusal reflects intentional design boundaries around regulated financial advice. The analyst should reframe the prompt to request objective analysis and form her own recommendation.","The analyst should try rephrasing the prompt in a way that disguises the request for advice.","The analyst should switch to a different AI model that does not have such restrictions."],ans:[1]},
+
+{q:"A communications director at a publicly traded pharmaceutical company is drafting a press release. She provides Claude with the key facts, approved CEO quotes, and the desired tone. She is aware that any statement resembling a forward-looking promise about efficacy or revenue could create legal exposure under securities regulations. Which approach BEST manages the legal risk?",
+opts:["Ask Claude to write a professional press release and send the draft directly to legal for review.","Include explicit instructions in the prompt to avoid definitive legal, financial, or efficacy promises; require Claude to flag any statement that could be read as a commitment; and then have legal review the flagged draft.","Write the press release entirely by hand to avoid any AI-related legal risk.","Ask Claude to be careful and avoid anything that sounds like a promise."],ans:[1]},
+
+{q:"A product manager at a B2B SaaS company is planning next quarter's roadmap. She gives Claude a list of 34 candidate features and asks it to rank them by importance. Claude returns a ranked list. The PM reviews it and strongly disagrees with the order — several low-revenue, high-effort features appear near the top, while features tied to the company's strategic priority of enterprise expansion appear in the middle. What is the MOST likely explanation for the mismatch?",
+opts:["Claude does not understand product management as a discipline.","The prompt did not define what importance means — revenue impact, strategic alignment, user demand, or engineering effort — so Claude applied a generic weighting.","Claude randomly ranks items and cannot be trusted for any prioritization task.","The PM should have used a weighted scoring spreadsheet instead of AI."],ans:[1]},
+
+{q:"A consultant is designing a one-day AI for Operations workshop for a manufacturing client. The audience will include plant managers, supply chain leads, and two IT staff. She gives Claude the client's industry, the audience's seniority, and the workshop duration. Claude produces an agenda that is reasonable but generic — heavy on AI theory, light on manufacturing-specific use cases, and it assumes participants have laptops. Which additional information would MOST improve the relevance of Claude's output?",
+opts:["The consultant's own biography and speaking style.","Specific learning objectives, the client's current AI maturity level, the absence of laptops, and a few real operational pain points.","The weather forecast for the workshop day and the venue's seating capacity.","The consultant's preferred slide font and color palette."],ans:[1]},
+
+{q:"A junior associate at a law firm is asked to summarize a 50-page commercial lease so the partner can quickly review key terms. The associate pastes the lease into Claude and prompts: Summarize this contract. Claude returns a clean summary covering rent, term, and maintenance obligations — but it does not mention an indemnification clause on page 47 that significantly shifts liability to the tenant. What is the MOST likely explanation for the miss?",
+opts:["Claude intentionally omitted the clause because it considered it unimportant.","The prompt was too generic; it did not instruct Claude to explicitly extract high-stakes legal clauses such as indemnification, liability caps, and termination rights.","The lease was too long for Claude to process fully.","Claude does not understand commercial leases and should not be used for legal work."],ans:[1]},
+
+{q:"A team lead is preparing a project charter for a new internal initiative. She has a charter from a previous project that the organization considers a gold-standard template. She wants Claude to produce a new charter that follows the same structure but reflects the new project's specifics. Which prompt approach is MOST likely to produce a charter that leadership will accept?",
+opts:["Write a project charter for the new project in a professional format.","Paste the entire old charter and say update this for the new project.","Paste only the template's heading structure, provide the new project's details, and instruct Claude to populate each section following the template's format.","Ask Claude to search the web for a standard project charter template and use that."],ans:[2]},
+
+{q:"A hospital administrator uses Claude to summarize 400 patient feedback surveys. Claude's summary states: 85% of patients reported satisfaction with wait times. The administrator pulls the raw data and finds that 62% selected satisfied or very satisfied, while 23% selected neutral and 15% selected dissatisfied. The 85% figure appears to have combined satisfied and neutral responses. What type of error has occurred?",
+opts:["A minor formatting inconsistency that does not affect the conclusion.","A hallucination or data-interpretation error that inflates a positive metric by misclassifying neutral responses as satisfied.","A rounding difference that is within acceptable reporting tolerance.","A survey design flaw that the administrator should have caught before collecting data."],ans:[1]},
+
+{q:"A consultant delivers a 40-page market entry strategy to a client. The report includes AI-generated competitor profiles. Two weeks later, the client discovers that one competitor profile contains a product name that does not exist and a headquarters location that is incorrect — both fabricated by the AI. Who bears PRIMARY responsibility for this failure?",
+opts:["The AI vendor, because the model generated false information.","The consultant, because she delivered the report without validating the AI-generated competitor details.","The client, because they should have fact-checked the report.","The competitor, because it did not publish accurate public information."],ans:[1]},
+
+{q:"A financial analyst uses Claude to extract key figures from 20 quarterly earnings reports. The extracted figures will feed directly into a client-facing valuation model. Which TWO practices are essential?",
+opts:["Adding the instruction be accurate and double-check your work to the prompt.","Cross-referencing every extracted figure against the original source document.","Using a consistent extraction template that specifies exactly which figures to pull, in what units, and in what format.","Trusting Claude's output because it has been accurate in the past.","Only extracting figures that appear in the headline section of each report."],ans:[1,2],multi:true},
+
+{q:"A project manager receives an AI-generated risk assessment for a large infrastructure project. The assessment rates supply chain disruption as low probability and low impact. However, the PM learns that the project's primary steel supplier is in serious financial distress. What is the MOST appropriate action?",
+opts:["Accept the AI's assessment because AI evaluates risk objectively.","Override the AI's assessment using her current, specific domain knowledge, and update the risk register.","Ask Claude to reconsider the assessment without telling it about the supplier's situation.","Discard the AI's risk assessment entirely and rebuild it manually."],ans:[1]},
+
+{q:"A consumer goods company's communications team uses Claude to draft social media posts. One post promoting a new sleep supplement includes: Clinically proven to improve sleep quality in 9 out of 10 users. Legal flags this as an unsubstantiated health claim. Where should this have been caught in the workflow?",
+opts:["The team should have used a different AI tool trained on advertising regulations.","The team should have reviewed the AI output for regulated claims and involved legal earlier in the prompt-design stage.","The legal advisor should have been the one writing the prompts.","The AI vendor should have blocked the claim automatically."],ans:[1]},
+
+{q:"A research analyst asks Claude to summarize a peer-reviewed paper. The paper's hypothesis is that the drug lowers blood pressure, but the study's conclusion is that the drug showed no statistically significant effect. Claude's summary states: The study found that the drug effectively lowers blood pressure. What is the MOST likely cause of the error?",
+opts:["Claude intentionally misrepresented the findings.","Claude confused the paper's stated hypothesis with its actual conclusion — a known failure mode with nuanced or negative results.","The paper was poorly written.","The analyst misread the abstract."],ans:[1]},
+
+{q:"A marketing team is generating ad copy for a regulated investment product. The copy must not use words like safe, risk-free, or assured, and must include a specific disclaimer. The team lead writes: Write ad copy that doesn't make any promises about returns. Is this prompt sufficient?",
+opts:["Yes, because Claude understands financial advertising regulations.","No — doesn't make any promises is vague. The prompt should list exact prohibited terms, the required disclaimer verbatim, and flag borderline language.","Yes, because the team lead will review the output anyway.","No, because AI should never be used for regulated financial products."],ans:[1]},
+
+{q:"A consultant is reviewing an AI-generated competitive analysis. Which TWO features should prompt her to verify the information before including it?",
+opts:["The analysis is well-written and uses a professional tone.","The analysis cites specific market share percentages without naming the source.","The analysis describes a competitor product feature the consultant has never heard of.","The analysis aligns with the consultant's existing beliefs.","The analysis is longer than expected."],ans:[1,2],multi:true},
+
+{q:"A hospital administrator uses Claude to draft a patient-facing communication about a change to the appointment cancellation policy. Before it is sent to thousands of patients, what should the administrator do?",
+opts:["Send it immediately, since the tone is appropriate.","Verify policy accuracy, check for PHI leakage, and confirm compliance with hospital communication and legal review policies.","Ask Claude to shorten the draft.","Translate the draft and send without further review."],ans:[1]},
+
+{q:"A business analyst asks Claude: Analyze this sales dataset and tell me what's interesting. Claude returns five trends. The analyst is not sure which are statistically meaningful. What should the analyst do NEXT?",
+opts:["Include all five trends since Claude is generally reliable.","Ask Claude to run specific statistical tests and report p-values, confidence intervals, and sample sizes.","Discard the analysis entirely.","Include only the trends that feel right."],ans:[1]},
+
+{q:"A consultant uses AI to generate a list of risks for a client entering a new market. The client operates in the medical device industry, heavily regulated by the FDA. The AI produces 15 risks, most of them generic. What validation step is MOST critical?",
+opts:["Alphabetizing the risks.","Ensuring the list includes industry-specific regulatory risks such as FDA approval timelines and clinical trial requirements.","Verifying that every risk is framed negatively.","Trimming the list to 10 risks."],ans:[1]},
+
+{q:"A team uses Claude to generate weekly performance reports for a retail client. The client notices that customer churn — a metric they track closely — is missing from every report. What is the BEST corrective action?",
+opts:["Manually add churn to every report going forward.","Update the prompt template to explicitly list customer churn as a required metric, and validate the next outputs.","Assume churn is no longer important.","Switch to a different AI tool."],ans:[1]},
+
+{q:"A consultant reviews an AI-generated executive summary. The summary describes a milestone delay in passive voice: Challenges were encountered, and timelines were adjusted. The client values transparency. What should the consultant do?",
+opts:["Submit as-is, because it is professionally written.","Rewrite the section to clearly state what happened, what caused the delay, and the new timeline.","Ask Claude to make it more honest.","Remove the section about the delay."],ans:[1]},
+
+{q:"Which TWO scenarios are examples of validation failures?",
+opts:["A user asks Claude to summarize a report and then reads the summary.","A user copies AI-generated statistics into a board presentation without verifying them.","A user prompts Claude to write in a formal tone and receives formal tone output.","A user publishes AI-generated legal guidance without professional review.","A user asks Claude for three options and selects one."],ans:[1,3],multi:true},
+
+{q:"A product manager receives an AI-generated summary: Users love the new feature. The PM checks the raw feedback — 40% positive, 45% neutral, 15% strongly negative. What is the BEST description of the AI's error?",
+opts:["A minor exaggeration.","A sentiment analysis failure that collapses nuanced feedback into a misleadingly positive summary.","A data collection error.","A formatting issue."],ans:[1]},
+
+{q:"A consultant is choosing between two AI models. Model A is faster/cheaper but less detailed. Model B is slower/more expensive but more nuanced. The task is a high-level summary of 50 customer interviews. Speed matters, budget is tight, and a senior consultant will review the output. Which model is BETTER?",
+opts:["Model A — task is high-level, speed/cost matter, and a human will review.","Model B — quality always takes priority.","Neither — summarize manually.","Model B — customer data is sensitive."],ans:[0]},
+
+{q:"A user needs to analyze a 300-page regulatory filing. The AI tool's context window handles about 100 pages at a time. What is the BEST approach?",
+opts:["Paste the entire document and ask the AI to read it quickly.","Divide the document into logical sections, analyze each separately, then synthesize.","Upload and hope the AI handles it.","Find a tool with unlimited context."],ans:[1]},
+
+{q:"A marketing team wants to generate personalized email subject lines for 10,000 customers in five segments. Which approach is MOST appropriate?",
+opts:["Generate one subject line for all.","Use a template-based prompt that inserts segment-specific variables and generate variations per segment.","Ask the AI to personalize without providing segment data.","Manually write 10,000 subject lines."],ans:[1]},
+
+{q:"A consultant selects an AI tool for a wealth management client with strict data privacy requirements. Which factor is MOST important?",
+opts:["The tool's user interface design.","The tool's data handling policies — training-data usage, encryption, and willingness to sign a DPA.","The tool's popularity on social media.","The tool's ability to generate charts."],ans:[1]},
+
+{q:"A project manager chooses between a general-purpose AI assistant and a specialized PM tool. Workflows are standard, and the team wants flexibility across task types. Which is BETTER?",
+opts:["The specialized PM tool.","The general-purpose assistant — standard workflows plus flexibility.","Neither — hire more staff.","The specialized PM tool — general-purpose AI is not secure."],ans:[1]},
+
+{q:"A user's AI model has a knowledge cutoff of January 2025. They need current information about a competitor's product launch from last month. What should the user do?",
+opts:["Ask the AI anyway — it might know.","Use a web-enabled AI tool, or manually provide the recent information in the prompt.","Give up.","Wait for the AI to update."],ans:[1]},
+
+{q:"A consultant compares two AI models for multilingual customer support. Model X supports 50 languages with high accuracy. Model Y supports 10 languages with very high accuracy. The client operates in 30 countries. Which model is BETTER?",
+opts:["Model X — broader coverage.","Model Y — accuracy always wins.","Model X — but only if the client's 30 countries' languages are covered in Model X's 50.","Neither — use human translators only."],ans:[2]},
+
+{q:"Which TWO factors should get the MOST weight when selecting an AI model for sensitive-data projects?",
+opts:["The model's ability to generate images.","The model's data privacy and security policies.","The model's cost relative to project budget.","The model's logo design.","The model's social media following."],ans:[1,2],multi:true},
+
+{q:"A marketing team uses AI ad-hoc: each member writes their own prompts and tone. Output varies widely. The lead wants to standardize without slowing down. What is the BEST first step?",
+opts:["Ban AI use until a formal policy is written.","Document a standard prompt template specifying role, tone, format, required elements, and prohibited claims — and train the team on it.","Let each member continue as-is.","Hire an external AI consultant to write all prompts."],ans:[1]},
+
+{q:"A project manager integrates AI into weekly status reports. After two weeks, review is taking longer than expected — 90 minutes per report. What is the MOST likely cause?",
+opts:["The AI is generating reports too slowly.","The PM is reviewing every word instead of focusing on high-risk sections (numbers, commitments, risks) and spot-checking the rest.","Reports are too long.","The PM should stop using AI."],ans:[1]},
+
+{q:"A consulting firm wants AI-generated first drafts of client deliverables. Partners worry about quality and liability. Which workflow BEST balances efficiency and risk?",
+opts:["AI drafts; junior consultants edit; partners review final before client delivery.","AI drafts; partners review and approve every draft before delivery.","AI drafts; no review needed.","Partners write everything manually."],ans:[0]},
+
+{q:"A hospital wants AI to triage patient intake forms — flagging urgent cases for nurse review. What is the MOST critical design consideration?",
+opts:["The AI's processing speed.","The AI's ability to explain why a case was flagged AND a guaranteed human review step for every flagged case.","The AI's cost per form.","The AI's user interface."],ans:[1]},
+
+{q:"A retail company's AI recommends products based on purchase history, but frequently recommends out-of-stock items. What is the BEST fix?",
+opts:["Ignore the issue.","Integrate real-time inventory data so only in-stock products are suggested.","Turn off AI recommendations entirely.","Manually review every recommendation."],ans:[1]},
+
+{q:"A consulting firm's AI-assisted proposal workflow: (1) AI drafts, (2) consultant reviews, (3) partner approves, (4) send. A client complains a proposal included a commitment the firm cannot meet. Where should the workflow have caught this?",
+opts:["Step 1 only.","Step 2 and/or Step 3 — human review should have flagged and removed the commitment.","Step 4 only.","The workflow is fine; the client misunderstood."],ans:[1]},
+
+{q:"For an AI workflow in a regulated industry, which TWO elements are MOST important?",
+opts:["A human review step before any output leaves the organization.","The AI's ability to generate creative content.","An audit trail logging AI inputs, outputs, and human decisions.","The AI's social media presence.","The AI's offline capability."],ans:[0,2],multi:true},
+
+{q:"A team integrates AI into customer email responses. They want to reduce response time while maintaining quality. Which metric BEST indicates success?",
+opts:["Total emails sent per day.","Average response time AND customer satisfaction scores, tracked together.","Number of AI-generated emails.","Number of human edits per email."],ans:[1]},
+
+{q:"An AI-assisted meeting summary workflow consistently misses action items assigned to specific people. What is the BEST corrective action?",
+opts:["Accept that AI cannot handle action items.","Update the prompt to explicitly request action items with owner names and due dates, and validate the next outputs.","Stop using AI for meeting summaries.","Ask attendees to write their own action items."],ans:[1]},
+
+{q:"A company wants AI to screen job applications. HR worries about bias. Which design element is MOST important?",
+opts:["The AI's processing speed.","Regular bias audits plus the ability to explain rejections plus human review for contested decisions.","The AI's cost per application.","The AI's ability to generate interview questions."],ans:[1]},
+
+{q:"A consulting firm uses AI to generate client meeting agendas. Output is consistently generic. What is the MOST likely fix?",
+opts:["Use a longer prompt.","Provide more context: industry, recent interactions, specific objectives, and attendee roles.","Ask the AI to be more specific.","Write the agenda manually."],ans:[1]},
+
+{q:"A consultant wants Claude to consistently use a specific brand voice. The voice guide is 5 pages long. What is the BEST way to configure this?",
+opts:["Paste the entire guide into every prompt.","Upload the guide as a knowledge file (if supported) or create a reusable system prompt capturing key voice attributes.","Hope Claude remembers the voice.","Manually edit every output."],ans:[1]},
+
+{q:"A PM wants Claude to always format project updates with specific sections: Status, Risks, Decisions Needed, Next Steps. What is the BEST way?",
+opts:["Ask Claude to use a standard format.","Include the exact section headings in the prompt or system configuration.","Review and reformat every output.","Use a different tool."],ans:[1]},
+
+{q:"A team wants Claude to always consult the refund policy before answering refund questions. The policy updates periodically. What is the BEST configuration?",
+opts:["Train Claude once and assume it remembers.","Upload the policy as a knowledge file, instruct Claude to reference it, and update the file whenever the policy changes.","Ask Claude to remember the refund policy.","Handle refund questions manually."],ans:[1]},
+
+{q:"A consulting firm uses a proposal template updated quarterly. What is the BEST approach?",
+opts:["Paste the template into every prompt.","Store the template as a knowledge file and update it quarterly; instruct Claude to always follow the current template.","Ask Claude to use the latest template.","Manually format every proposal."],ans:[1]},
+
+{q:"Which TWO are genuine benefits of using knowledge files or system prompts?",
+opts:["They eliminate the need for human review.","They provide consistent context across multiple interactions.","They reduce the need to repeat the same instructions in every prompt.","They guarantee 100% factual accuracy.","They replace the need for prompt engineering."],ans:[1,2],multi:true},
+
+{q:"A PM wants Claude to always include a confidentiality notice at the end of every client email. What is the BEST way?",
+opts:["Ask Claude to add a confidentiality notice.","Include the exact notice text in the system prompt or template and instruct Claude to append it every time.","Manually add the notice.","Hope Claude remembers."],ans:[1]},
+
+{q:"A team uses Claude to answer product-spec questions. Specifications change frequently. What is the BEST configuration?",
+opts:["Train Claude once and assume it stays current.","Store specifications in a knowledge file and update it whenever specs change.","Ask Claude to guess current specs.","Tell customers to check the website."],ans:[1]},
+
+{q:"A consultant wants Claude to use APA 7th edition citation format. What is the BEST way?",
+opts:["Ask Claude to use APA format.","Provide the exact APA 7th guidelines in the system prompt or knowledge file.","Manually reformat every citation.","Use a different tool."],ans:[1]},
+
+{q:"A hospital client wants AI to analyze patient feedback comments that sometimes contain PHI. HIPAA compliance is required. What is the MOST important consideration?",
+opts:["The AI's processing speed.","No PHI input unless the tool has appropriate safeguards (encryption, no training on inputs) and a Business Associate Agreement is in place.","The AI's cost.","The AI's ability to generate charts."],ans:[1]},
+
+{q:"A company's AI-generated social post contains a discriminatory stereotype. The post was published without review. Who is responsible?",
+opts:["The AI vendor only.","The company using the AI, because they published the content.","The customer who complained.","No one."],ans:[1]},
+
+{q:"A government agency uses AI to process citizen applications. Transparency and accountability are required. Which practice is MOST important?",
+opts:["Keeping the AI's decision-making secret.","Maintaining an audit trail of AI inputs, outputs, and human decisions, and providing citizens a way to appeal.","Using the fastest AI available.","Avoiding human review."],ans:[1]},
+
+{q:"Which TWO are examples of responsible AI use in client-facing consulting?",
+opts:["Disclosing AI use where appropriate.","Using AI to generate legal advice without review.","Validating AI-generated facts before delivery.","AI making final hiring decisions without human review.","Sharing client data without checking policies."],ans:[0,2],multi:true},
+
+{q:"A financial services firm uses AI to generate investment summaries. It is regulated by securities authorities. What is the MOST critical governance requirement?",
+opts:["The AI must be fast.","All AI-generated content must be reviewed by a qualified professional before distribution, and records of AI use must be maintained.","The AI must be cheap.","The AI must generate images."],ans:[1]},
+
+{q:"A company uses AI to screen resumes. A rejected candidate requests an explanation. What should the company provide?",
+opts:["Nothing — AI decisions are final.","An explanation of the criteria used and the ability to have a human review the decision.","The candidate's social media history.","A refund."],ans:[1]},
+
+{q:"A client operates in multiple jurisdictions with different AI regulations. What is the BEST approach?",
+opts:["Ignore regulations.","Identify the most stringent applicable regulations and comply with those, while also meeting local requirements.","Comply only with HQ country regulations.","Avoid AI entirely."],ans:[1]},
+
+{q:"Which TWO are potential risks of using AI without appropriate governance?",
+opts:["Increased efficiency.","Legal liability from AI-generated content that violates regulations.","Reputational damage from biased or inaccurate output.","Lower costs.","Faster turnaround."],ans:[1,2],multi:true},
+
+{q:"A company wants AI to generate personalized financial advice, but it is not a registered investment advisor. What is the MOST appropriate action?",
+opts:["Proceed — AI advice is not regulated.","Consult legal counsel to determine whether the AI-generated advice constitutes regulated advice, and implement appropriate safeguards or disclaimers.","Ignore regulations.","Generate advice but don't tell customers."],ans:[1]},
+
+{q:"A hospital wants AI to prioritize patients for elective surgeries. Fairness must be ensured. What is the MOST important safeguard?",
+opts:["The AI's speed.","Regular bias audits plus human review for all AI-generated prioritization decisions.","The AI's cost.","The AI's ability to generate reports."],ans:[1]},
+
+{q:"Which TWO statements about AI governance are correct?",
+opts:["AI governance is only relevant for large enterprises.","AI governance includes policies for data privacy, bias detection, and human oversight.","AI governance is a one-time setup.","AI governance should be proportional to the risk and impact of the AI application.","AI governance is only about complying with laws."],ans:[1,3],multi:true},
+
+{q:"A team's AI-generated weekly reports are accurate but take 3 hours to review. They want to reduce review time. What is the BEST approach?",
+opts:["Reduce report length.","Focus review on highest-risk sections (numbers, commitments, recommendations) and spot-check the rest.","Stop reviewing reports.","Use a different AI tool."],ans:[1]},
+
+{q:"A consultant notices Claude's output quality has declined over the past week. Prompts are the same as before. What is the MOST likely explanation?",
+opts:["Claude has gotten worse.","The consultant may be providing less context, or the task may have become more complex; reviewing prompts and adding specific context could help.","Switch to a different tool.","AI quality is random."],ans:[1]},
+
+{q:"An AI-assisted meeting summary is too long and includes irrelevant details. What is the BEST fix?",
+opts:["Ask Claude to be shorter.","Specify the exact sections and word count for each section, and instruct Claude to exclude small talk and off-topic discussions.","Manually edit every summary.","Stop using AI for summaries."],ans:[1]},
+
+{q:"AI-generated customer support responses feel robotic and impersonal. What is the BEST fix?",
+opts:["Add more emojis.","Provide tone guidelines, examples of the desired voice, and instructions to personalize responses with customer names and issue details.","Ignore the complaints.","Use a different AI tool."],ans:[1]},
+
+{q:"AI-generated client proposals consistently miss a required Implementation Timeline section. What is the BEST corrective action?",
+opts:["Manually add the section every time.","Update the prompt template to explicitly include the Implementation Timeline section and validate the next outputs.","Assume the section is not important.","Use a different tool."],ans:[1]},
+
+{q:"AI-generated social media content has low engagement. What is the BEST approach to improve performance?",
+opts:["Post more frequently.","Analyze which posts performed well, identify patterns (tone, format, topic), and refine the prompt template based on those insights.","Stop using AI.","Copy competitors' content."],ans:[1]},
+
+{q:"AI-generated customer FAQ answers are sometimes outdated. What is the BEST fix?",
+opts:["Ignore the issue.","Update the knowledge base regularly and implement a process for flagging outdated information.","Tell customers to check the website.","Use a different AI tool."],ans:[1]}
+];
+
+const examDiv = document.getElementById('exam');
+questions.forEach((q,i)=>{
+  let html = '<div class="q"><p>Q'+(i+1)+'. '+q.q+(q.multi?' <span class="multi">(Select 2)</span>':'')+'</p>';
+  q.opts.forEach((opt,j)=>{
+    html += '<label><input type="checkbox" name="q'+i+'" value="'+j+'"> '+String.fromCharCode(65+j)+') '+opt+'</label>';
+  });
+  html += '<div class="result" id="r'+i+'" style="display:none"></div></div>';
+  examDiv.innerHTML += html;
+});
+
+function arraysEqual(a,b){
+  if(a.length!==b.length) return false;
+  const sa=[...a].sort(), sb=[...b].sort();
+  for(let i=0;i<sa.length;i++){ if(sa[i]!==sb[i]) return false; }
+  return true;
+}
+
+function submitExam(){
+  let score=0;
+  questions.forEach((q,i)=>{
+    const checked=[...document.querySelectorAll('input[name="q'+i+'"]:checked')].map(c=>parseInt(c.value));
+    const isCorrect=arraysEqual(checked,q.ans);
+    if(isCorrect) score++;
+    const r=document.getElementById('r'+i);
+    r.style.display='block';
+    r.className='result '+(isCorrect?'correct':'wrong');
+    const correctLetters=q.ans.map(a=>String.fromCharCode(65+a)).join(', ');
+    r.innerHTML=(isCorrect?'✅ Correct! ':'❌ Wrong. ')+'Correct answer: <b>'+correctLetters+'</b>';
+  });
+  const sc=document.getElementById('score');
+  sc.style.display='block';
+  sc.innerHTML='Your Score: '+score+' / 70 ('+Math.round(score/70*100)+'%)';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html> 
